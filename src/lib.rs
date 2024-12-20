@@ -11,7 +11,7 @@ pub struct ThreadPool {
 }
 type Job = Box<dyn FnOnce() + Send + 'static>;
 impl ThreadPool {
-    pub fn new(size: usize) -> ThreadPool {
+    pub fn new<'pool_lifetime>(size: usize) -> ThreadPool {
         assert!(size > 0);
 
         let (sender, receiver) = mpsc::channel();
@@ -42,7 +42,7 @@ impl Drop for ThreadPool {
         drop(self.sender.take());
 
         for worker in &mut self.workers {
-            println!("Shutting down worker {}", worker.id);
+            println!("Dropping worker {}", worker.id);
 
             if let Some(thread) = worker.thread.take() {
                 thread.join().unwrap();
@@ -63,11 +63,11 @@ impl Worker {
 
             match message {
                 Ok(job) => {
-                    //println!("Worker {id} got a job; executing.");
+                    println!("Worker {id} got a job; executing.");
                     job();
                 }
-                Err(_) => {
-                    //println!("Worker {id} shutting down.");
+                Err(error) => {
+                    println!("Worker {id} shutting down: {error}");
                     break;
                 }
             }
