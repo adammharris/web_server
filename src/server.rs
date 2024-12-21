@@ -55,7 +55,7 @@ struct Response {
 
 impl Server {
 
-    pub fn new(port: u32, ip: String) -> Server {
+    pub fn new(ip: String, port: u32) -> Server {
         let address = format!("{ip}:{port}");
         let listener = match TcpListener::bind(&address.to_string()) {
             Ok(listener) => listener,
